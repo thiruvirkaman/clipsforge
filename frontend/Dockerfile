@@ -5,9 +5,12 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 
-# No VITE_API_URL build arg needed: the app calls the API via a relative
-# `/api/v1` path, proxied by nginx (see nginx.conf) to the backend service
-# at container runtime -- same-origin, so no build-time URL and no CORS.
+# Optional: only needed when the frontend/backend are deliberately served
+# from different origins (see src/services/api.ts). Left unset, the app
+# calls the API via a relative `/api/v1` path proxied by nginx (nginx.conf)
+# to the backend service at container runtime -- same-origin, no CORS.
+ARG VITE_API_URL=
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 FROM nginx:alpine
