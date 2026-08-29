@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: pip install -r requirements-dev.txt
+
+      - name: Ruff
+        working-directory: backend
+        run: ruff check .
+
+      - name: Mypy
+        working-directory: backend
+        env:
+          DATABASE_URL: "sqlite:///./ci.db"
+          SECRET_KEY: "ci-secret-key"
+        run: mypy app/
+
+      - name: Run backend tests
+        working-directory: backend
+        run: pytest --cov=app --cov-fail-under=80
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: ESLint
+        working-directory: frontend
+        run: npx eslint . --ext ts,tsx --max-warnings 0
+
+      - name: TypeScript check
+        working-directory: frontend
+        run: npx tsc -b --noEmit
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm test
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+  build:
+    needs: [backend-tests, frontend-tests]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build images
+        run: docker compose build
