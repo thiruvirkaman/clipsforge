@@ -157,6 +157,14 @@ def render_clip_video(
             video_filter,
             "-c:v",
             "libx264",
+            # No preset previously meant libx264's default "medium" -- the
+            # slowest setting still called "safe" by ffmpeg's own docs, and
+            # tuned for archival compression rather than short social clips
+            # that get re-compressed by every platform's own upload pipeline
+            # anyway. "veryfast" cuts encode time substantially for a
+            # quality difference that isn't visible at this output size.
+            "-preset",
+            "veryfast",
             "-c:a",
             "aac",
             output_path,

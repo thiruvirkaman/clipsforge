@@ -23,4 +23,15 @@ celery_app.conf.update(
     timezone="UTC",
     enable_utc=True,
     task_track_started=True,
+    # Without these, a worker restart (deploy, crash, OOM) silently drops
+    # whatever task it was running or had already prefetched -- the default
+    # is to ack a task the moment it's received, not once it finishes. Late
+    # acks mean an interrupted task gets redelivered to another worker
+    # instead of vanishing; prefetch=1 stops a worker hoarding several
+    # long-running render tasks while sibling clips sit idle. Every task in
+    # this app (transcribe/highlight/render) re-derives its state from the
+    # DB and writes to a deterministic output path, so a redelivered retry
+    # is safe to just re-run from scratch.
+    task_acks_late=True,
+    worker_prefetch_multiplier=1,
 )

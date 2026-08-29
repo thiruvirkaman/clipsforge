@@ -85,7 +85,7 @@ export default function ProjectDetailPage() {
           </div>
         )}
 
-        {project.status === 'ready' && <ClipsGrid projectId={project.id} />}
+        {project.status !== 'failed' && <ClipsGrid projectId={project.id} />}
       </div>
     </PageWrapper>
   );
