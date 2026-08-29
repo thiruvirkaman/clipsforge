@@ -44,6 +44,15 @@ class Settings(BaseSettings):
     ASR_MODEL: str = "whisper-1"
     LLM_SERVICE_API_KEY: str = ""
 
+    # Optional: path to a Netscape-format cookies.txt file (see
+    # app.services.youtube_service) used to authenticate yt-dlp requests.
+    # Unset by default -- YouTube downloads work without it in most cases,
+    # but some hosting providers' IP ranges get an anti-bot challenge
+    # ("Sign in to confirm you're not a bot") that only cookies resolve.
+    # Never commit a real cookies file; this should point at a file mounted
+    # outside version control (e.g. a Docker bind mount to a `secrets/` dir).
+    YOUTUBE_COOKIES_PATH: str = ""
+
     # Media storage
     MEDIA_STORAGE_PATH: str = "/data/media"
     MEDIA_STORAGE_BACKEND: str = "local"

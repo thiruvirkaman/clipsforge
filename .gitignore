@@ -31,6 +31,8 @@ pnpm-debug.log*
 .env
 .env.local
 .env.*.local
+secrets/
+*cookies*.txt
 
 # --- Media / uploads (local dev + test artifacts) ---
 data/media/

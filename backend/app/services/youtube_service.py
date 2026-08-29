@@ -16,6 +16,7 @@ from urllib.parse import parse_qs, urlparse
 
 import yt_dlp
 
+from app.config import settings
 from app.exceptions import ValidationError
 
 logger = logging.getLogger(__name__)
@@ -121,6 +122,12 @@ def _download_into(url: str, tmp_dir: str) -> DownloadedVideo:
         "merge_output_format": "mp4",
         "retries": 2,
     }
+    # Some hosting providers' IP ranges trigger YouTube's anti-bot challenge
+    # ("Sign in to confirm you're not a bot"), which no amount of player
+    # client spoofing resolves -- only an authenticated session (via
+    # cookies) does. Optional: most environments don't need this at all.
+    if settings.YOUTUBE_COOKIES_PATH:
+        ydl_opts["cookiefile"] = settings.YOUTUBE_COOKIES_PATH
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
