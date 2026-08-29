@@ -1,0 +1,13 @@
+# Production override for VPS deployment behind an existing host nginx +
+# Let's Encrypt setup. api/frontend bind to 127.0.0.1 only (not 0.0.0.0) --
+# host nginx terminates TLS on 80/443 and reverse-proxies to these
+# loopback-only ports; the containers are never directly internet-reachable.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+services:
+  api:
+    ports:
+      - "127.0.0.1:8010:8000"
+
+  frontend:
+    ports:
+      - "127.0.0.1:8011:80"
