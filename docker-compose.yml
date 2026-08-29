@@ -102,9 +102,11 @@ services:
       # Optional (see YOUTUBE_COOKIES_PATH above): ./secrets is gitignored
       # and empty by default -- Compose creates it automatically if it
       # doesn't exist, so this mount is a harmless no-op unless a real
-      # cookies file has been placed there. Read-only, worker-only (the
-      # api container never touches YouTube).
-      - ./secrets:/run/secrets:ro
+      # cookies file has been placed there. Worker-only (the api container
+      # never touches YouTube). NOT read-only: yt-dlp rewrites the cookie
+      # jar after use (session/token refresh) -- a read-only mount makes
+      # every run fail on exit trying to save it back.
+      - ./secrets:/run/secrets
 
   frontend:
     build:
