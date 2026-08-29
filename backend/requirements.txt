@@ -16,3 +16,10 @@ redis>=5.0.0
 cryptography>=42.0.0
 python-dotenv>=1.0.0
 yt-dlp>=2024.3.0
+# PoToken provider client: YouTube now rejects most format URLs (silently
+# dropping them from the `formats` list, not just erroring) unless requests
+# carry a valid proof-of-origin token. This plugin fetches one from the
+# bgutil-provider sidecar container (see docker-compose.yml) over HTTP --
+# without it, YouTube downloads fail with "Requested format is not
+# available" even with valid cookies.
+bgutil-ytdlp-pot-provider>=1.0.0

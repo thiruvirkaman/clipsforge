@@ -128,6 +128,16 @@ def _download_into(url: str, tmp_dir: str) -> DownloadedVideo:
     # cookies) does. Optional: most environments don't need this at all.
     if settings.YOUTUBE_COOKIES_PATH:
         ydl_opts["cookiefile"] = settings.YOUTUBE_COOKIES_PATH
+    # YouTube now requires a valid proof-of-origin token on most format
+    # requests -- without one, yt-dlp still extracts metadata fine but the
+    # `formats` list comes back filtered to nothing usable, surfacing as
+    # "Requested format is not available" regardless of cookies/client.
+    # bgutil-ytdlp-pot-provider (installed as a plugin) fetches this token
+    # from the sidecar container at this URL when configured.
+    if settings.YOUTUBE_POT_PROVIDER_BASE_URL:
+        ydl_opts["extractor_args"] = {
+            "youtubepot-bgutilhttp": {"base_url": [settings.YOUTUBE_POT_PROVIDER_BASE_URL]},
+        }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:

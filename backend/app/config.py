@@ -53,6 +53,15 @@ class Settings(BaseSettings):
     # outside version control (e.g. a Docker bind mount to a `secrets/` dir).
     YOUTUBE_COOKIES_PATH: str = ""
 
+    # Optional: base URL of a bgutil-ytdlp-pot-provider HTTP server (see
+    # docker-compose.yml's `bgutil-provider` service). YouTube now silently
+    # drops formats from the `formats` list unless requests carry a valid
+    # proof-of-origin token, causing "Requested format is not available"
+    # even with valid cookies -- this is what supplies that token. Unset by
+    # default so local/test environments without the sidecar container
+    # (e.g. plain `pytest`, `uvicorn` outside Docker) still work unaffected.
+    YOUTUBE_POT_PROVIDER_BASE_URL: str = ""
+
     # Media storage
     MEDIA_STORAGE_PATH: str = "/data/media"
     MEDIA_STORAGE_BACKEND: str = "local"

@@ -26,6 +26,16 @@ services:
       timeout: 5s
       retries: 5
 
+  # Supplies YouTube proof-of-origin tokens to the worker's yt-dlp calls
+  # (see backend/app/services/youtube_service.py). YouTube silently drops
+  # formats it can't verify a token for, which surfaces as "Requested
+  # format is not available" -- cookies alone no longer resolve this.
+  # Internal-only: no ports are published, the worker reaches it by
+  # service name over the compose network.
+  bgutil-provider:
+    image: brainicism/bgutil-ytdlp-pot-provider:latest
+    restart: unless-stopped
+
   # One-shot: applies migrations exactly once before api/worker start, so
   # they never race each other creating the schema on a fresh database
   # (both running `alembic upgrade head` concurrently on an empty DB can
@@ -90,6 +100,11 @@ services:
       ASR_SERVICE_API_KEY: ${ASR_SERVICE_API_KEY:-}
       LLM_SERVICE_API_KEY: ${LLM_SERVICE_API_KEY:-}
       YOUTUBE_COOKIES_PATH: ${YOUTUBE_COOKIES_PATH:-}
+      # Defaults to the bundled sidecar container (see bgutil-provider
+      # above) by its in-network service name -- works out of the box for
+      # `docker compose up`. Override in .env only to point at a different
+      # (e.g. externally-hosted) provider instance.
+      YOUTUBE_POT_PROVIDER_BASE_URL: ${YOUTUBE_POT_PROVIDER_BASE_URL:-http://bgutil-provider:4416}
     depends_on:
       db:
         condition: service_healthy
@@ -97,6 +112,8 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+      bgutil-provider:
+        condition: service_started
     volumes:
       - media_data:/data/media
       # Optional (see YOUTUBE_COOKIES_PATH above): ./secrets is gitignored
